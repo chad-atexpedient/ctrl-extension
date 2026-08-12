@@ -44,21 +44,37 @@ anything else the same way. See [Bring your own model](#bring-your-own-model).*
 
 - **Context-aware chat** — pull in the current page or a text selection so you're never
   explaining what you're looking at
-- **Browser agent** — a Chrome DevTools Protocol–driven agent that can navigate, click, type,
-  screenshot, and fill in forms, with an explicit approval step before anything it does could
-  change something
+- **Browser agent** — 11 Chrome DevTools Protocol tools (navigate, click, type, screenshot,
+  extract text, enumerate elements, run JavaScript, and more). Anything that changes something
+  needs your approval, and it fails closed: no response within 60 seconds, or the side panel
+  closed, and the action is denied automatically rather than allowed
 - **20+ built-in tool skills** — a code interpreter, Excel/CSV/JSON tools, slide deck and
-  document generation, chart building, a regex tester, a web scraper, git automation, PDF
-  tools, and more, all callable straight from chat
+  document generation, chart building, a regex tester, a web scraper, 3D scenes, color
+  palettes, PDF export, and more, all callable straight from chat
 - **MCP client** — connect Model Context Protocol servers for still more tools without waiting
   on us to build them in
 - **Slash commands & prompt snippets** — `/summarize`, `/explain`, `/slides`, `/mvp`, `/code`,
-  plus a full command palette (`Ctrl+K`) and reusable snippet triggers
+  plus a full command palette (`Ctrl+K`), voice dictation, and reusable snippet triggers
 - **Real conversation memory** — searchable, taggable, pinnable history with export/import, not
   a chat log that vanishes when you close the panel
-- **24+ themes** — light, dark, cinematic, terminal, and more, plus a compact density mode
+- **Spend dashboard** — per-call token usage and cost, broken down by provider and model, with
+  session/week/month totals, a 14-day chart, and CSV export
+- **24+ themes** — light, dark, cinematic, terminal, and more, plus a compact density mode and
+  a custom logo upload if you want the UI to carry your own branding
 - **Bring your own model** — your API key is encrypted (AES-256-GCM) and stored locally; it's
   never sent anywhere except the provider you chose
+
+### Keyboard shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Alt+Shift+A` | Open the side panel |
+| `Alt+Shift+B` | Toggle the browser agent |
+| `Ctrl+K` / `Cmd+K` | Command palette |
+| `Ctrl+J` / `Cmd+J` | Toggle the code pane |
+| `Ctrl+Shift+S` / `Cmd+Shift+S` | Toggle the conversation sidebar |
+| `/` | Focus sidebar search (when no input is focused) |
+| `Escape` | Close whatever's open — palette, sidebar, drawer, onboarding |
 
 ## Bring your own model
 
@@ -94,6 +110,10 @@ CTRL isn't on a store yet — install it from source:
 - AI-generated previews (slide decks, mini web apps, reports) render inside a sandboxed,
   network-isolated iframe — its CSP blocks outbound requests entirely, so generated code can't
   phone home even if it tried
+- Custom and local providers get a runtime permission request scoped to that one origin
+  (`chrome.permissions.request`), not a blanket host grant
+- Every tool call is rate-limited, and a rolling audit log records security-relevant events
+  (installs, auth, model changes, memory rebuilds)
 - No analytics, no telemetry, nothing sent anywhere except the AI provider you configured
 
 Full details in [SECURITY.md](SECURITY.md) and [PRIVACY-POLICY.md](PRIVACY-POLICY.md).
