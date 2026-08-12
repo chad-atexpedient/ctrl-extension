@@ -10,10 +10,12 @@ all from a side panel, with the AI provider of your choice.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/chad-atexpedient/ctrl-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/chad-atexpedient/ctrl-extension/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-1.1.1-blue)
-[![Chrome · Firefox · Safari](https://img.shields.io/badge/Chrome%20%C2%B7%20Firefox%20%C2%B7%20Safari-supported-6e56cf)](DISTRIBUTION.md)
+![Version](https://img.shields.io/badge/version-1.1.1-f30505)
+[![Chrome · Firefox · Safari](https://img.shields.io/badge/Chrome%20%C2%B7%20Firefox%20%C2%B7%20Safari-supported-f30505)](DISTRIBUTION.md)
 
 [Install](#installation) · [What it does](#what-it-does) · [Providers](#bring-your-own-model) · [Docs site](https://chad-atexpedient.github.io/ctrl-extension/) · [Contributing](CONTRIBUTING.md)
+
+<sub><img src="docs/assets/expedient-icon.png" width="14" align="absmiddle" alt=""> An <b>Expedient AI</b> project</sub>
 
 </div>
 
@@ -135,3 +137,7 @@ ctrl-extension/
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+<sub><img src="docs/assets/expedient-icon.png" width="14" align="absmiddle" alt=""> Built in-house at <b>Expedient</b>, open sourced under MIT.</sub>
