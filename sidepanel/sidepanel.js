@@ -253,6 +253,7 @@ class ChatUI {
       chrome.storage.local.get(['pending_quick_prompt'], (result) => {
         if (result.pending_quick_prompt) {
           this.elements.messageInput.value = result.pending_quick_prompt
+          this.autoResize()
           chrome.storage.local.remove('pending_quick_prompt')
           setTimeout(() => this.sendMessage(), 300)
         }
@@ -483,6 +484,7 @@ class ChatUI {
       if (btn) {
         const prompt = btn.dataset.prompt
         this.elements.messageInput.value = prompt
+        this.autoResize()
         this.elements.messageInput.focus()
       }
     }
@@ -506,8 +508,15 @@ class ChatUI {
     this.addTrackedListener(document, 'click', handleDropdownItem)
 
     // Close dropdowns on outside click - use event delegation
+    // (was checking the nonexistent class ".new-chat-menu" — the element's
+    // actual class is "dropdown-menu", id "new-chat-menu". This happened to
+    // still work because the delegated dropdown-item handler above is
+    // registered first and runs before this one, but it meant *every* click
+    // anywhere on the page — including inside the open menu — was treated as
+    // "outside" and closed it, which is fragile and breaks if handler order
+    // ever changes.)
     this.addTrackedListener(document, 'click', (e) => {
-      if (!e.target.closest('.new-chat-menu') && !e.target.closest('#new-chat-btn')) {
+      if (!e.target.closest('#new-chat-menu') && !e.target.closest('#new-chat-btn')) {
         this.closeDropdowns()
       }
     })
@@ -913,7 +922,7 @@ class ChatUI {
   }
 
   closeDropdowns() {
-    this.elements.newChatMenu.classList.add('hidden')
+    this.elements.newChatMenu?.classList.add('hidden')
     this.elements.newChatBtn?.setAttribute('aria-expanded', 'false')
   }
 
@@ -1358,15 +1367,22 @@ class ChatUI {
 
   autoResize() {
     const el = this.elements.messageInput
-    const currentHeight = el.offsetHeight
-    const scrollHeight = el.scrollHeight
+    if (!el) return
 
-    // Only update if height actually needs to change — avoids flicker
-    if (scrollHeight !== currentHeight || el.style.height === 'auto') {
-      el.style.height = scrollHeight + 'px'
-      const max = Math.min(scrollHeight, 200)
-      el.style.height = max + 'px'
-    }
+    // Reset to 'auto' before measuring. scrollHeight can never report smaller
+    // than the box's *current* rendered height, so without this reset the
+    // textarea would grow with typing but never shrink back down again (e.g.
+    // after sending a long message, or deleting text back to one line) — the
+    // box would just stay stuck at its largest-ever size. Resetting first
+    // forces the browser to recompute the natural content height every time.
+    el.style.height = 'auto'
+
+    const maxHeight = 200 // px — keep in sync with #message-input max-height in sidepanel.css
+    const next = Math.min(el.scrollHeight, maxHeight)
+    el.style.height = next + 'px'
+    // Only show a scrollbar once content actually exceeds the cap, so short
+    // messages never get a stray scrollbar from UA default textarea styling.
+    el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden'
   }
 
   /**
@@ -1437,6 +1453,7 @@ class ChatUI {
           this.codePane.appendToTerminal(`Generating code for: ${args}`, 'info')
           // Send as a normal chat message with code context
           this.elements.messageInput.value = `Write code to ${args}. Show the code and explain it.`
+          this.autoResize()
           await this.sendMessage()
         }
         break
@@ -1444,6 +1461,7 @@ class ChatUI {
       case 'webSearch':
         if (args) {
           this.elements.messageInput.value = `Search the web for: ${args}`
+          this.autoResize()
           await this.sendMessage()
         }
         break
@@ -1557,7 +1575,7 @@ class ChatUI {
       const parsed = this.commandRegistry.parse(content)
       if (parsed) {
         this.elements.messageInput.value = ''
-        this.elements.messageInput.style.height = 'auto'
+        this.autoResize()
         this.commandAutocomplete?.hide()
         await this.executeCommand(parsed.command, parsed.args)
         return
@@ -1576,7 +1594,7 @@ class ChatUI {
     this.lastUserAttachments = attachments
 
     this.elements.messageInput.value = ''
-    this.elements.messageInput.style.height = 'auto'
+    this.autoResize()
 
     this.isGenerating = true
     this.isStreaming = true

@@ -97,6 +97,20 @@
       </div>
     </header>
 
+    <!-- Setup Banner: shown until an API key is configured (see ChatUI#loadState).
+         Always reachable even if a user skips the first-run onboarding wizard —
+         the gear icon in the header works too, this is just a louder reminder. -->
+    <div id="setup-banner" class="setup-banner hidden" role="status" aria-live="polite">
+      <div class="setup-content">
+        <svg class="setup-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+        </svg>
+        <h3>Set up your API key</h3>
+        <p>Add a key from OpenAI, Anthropic, or another provider to start chatting.</p>
+        <button id="setup-btn" class="btn btn-primary">Set Up API Key</button>
+      </div>
+    </div>
+
     <!-- Browser Status Bar -->
     <div id="web-agent-status" class="browser-status-bar" role="status" aria-live="polite">
       <span class="status-dot" aria-hidden="true"></span>
