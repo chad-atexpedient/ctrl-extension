@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTRL Extension</title>
+  <link rel="stylesheet" href="../styles/variables.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/themes.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="popup-container">
+    <div class="popup-header">
+      <div class="popup-title-group">
+        <img id="popup-logo" class="popup-logo" src="" alt="" style="display:none">
+        <h1>CTRL</h1>
+      </div>
+      <span id="status-badge" class="badge" role="status" aria-live="polite">Ready</span>
+    </div>
+
+    <div id="no-api-key" class="popup-content hidden">
+      <p>No API key configured</p>
+      <button id="setup-btn" class="btn btn-primary btn-full">Set Up Key</button>
+    </div>
+
+    <div id="main-content" class="popup-content">
+      <!-- Quick action buttons -->
+      <div class="quick-actions" role="group" aria-label="Quick actions" id="quick-actions">
+        <button class="action-btn" data-action="summarize" aria-label="Summarize this page">
+          <svg class="action-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          <span>Summarize</span>
+        </button>
+        <button class="action-btn" data-action="explain" aria-label="Explain this code or text">
+          <svg class="action-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <span>Explain</span>
+        </button>
+        <button class="action-btn" data-action="context" aria-label="Get context about this page">
+          <svg class="action-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Context</span>
+        </button>
+        <button class="action-btn" data-action="translate" aria-label="Translate selected text">
+          <svg class="action-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 8l6 6"></path><path d="M4 14l6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="M22 22l-5-10-5 10"></path><path d="M14 18h6"></path></svg>
+          <span>Translate</span>
+        </button>
+      </div>
+
+      <!-- Result preview area -->
+      <div id="result-area" class="result-area hidden" aria-live="polite" aria-label="AI response">
+        <div class="result-header">
+          <span id="result-label" class="result-label">Response</span>
+          <div class="result-actions">
+            <button id="result-copy" class="result-action-btn" title="Copy" aria-label="Copy response">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button id="result-expand" class="result-action-btn" title="Open in panel" aria-label="Open in chat panel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div id="result-content" class="result-content"></div>
+        <div class="result-followup">
+          <input type="text" id="followup-input" placeholder="Ask a follow-up..." aria-label="Follow-up question">
+          <button id="followup-send" class="btn btn-primary btn-sm">Send</button>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-area" class="loading-area hidden" aria-live="polite">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <span id="loading-text" class="loading-text">Thinking...</span>
+      </div>
+
+      <!-- Quick input -->
+      <div class="quick-input" id="quick-input-area">
+        <label for="quick-prompt" class="sr-only">Quick question</label>
+        <input type="text" id="quick-prompt" placeholder="Ask anything..." aria-label="Quick question">
+        <button id="send-quick" class="btn btn-primary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button id="open-panel" class="btn btn-secondary btn-full">Open Full Chat</button>
+    </div>
+
+    <div id="popup-toast" class="toast hidden" role="alert" aria-live="assertive"></div>
+  </main>
+
+  <script src="../platform/browser-api.js"></script>
+  <script src="../lib/marked.min.js"></script>
+  <script src="../lib/purify.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

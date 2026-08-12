@@ -1,0 +1,17 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+*.pem
+*.key
+safari/CTRL Extension/
+.ctrl-extension/
+.DS_Store
+Thumbs.db
+.sisyphus/

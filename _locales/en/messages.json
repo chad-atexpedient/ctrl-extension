@@ -1,0 +1,18 @@
+{
+  "extensionName": {
+    "message": "CTRL Extension",
+    "description": "The name of the browser extension"
+  },
+  "extensionDescription": {
+    "message": "In-browser AI agent with context awareness, browser automation, and native tool execution",
+    "description": "The store listing description shown in the browser"
+  },
+  "openSidepanelCommand": {
+    "message": "Open CTRL side panel",
+    "description": "Keyboard command description"
+  },
+  "toggleBrowserAgentCommand": {
+    "message": "Toggle Browser Agent (attach/detach CDP)",
+    "description": "Keyboard command description"
+  }
+}

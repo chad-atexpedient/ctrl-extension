@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat</title>
+  <link rel="stylesheet" href="../lib/highlight.css">
+  <link rel="stylesheet" href="../styles/variables.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/themes.css">
+  <link rel="stylesheet" href="agent.css">
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app">
+    <div id="consent-banner" class="consent-banner hidden" role="status" aria-live="polite">
+      <span class="consent-banner-text"></span>
+      <button class="consent-banner-accept hidden">Allow</button>
+      <button class="consent-banner-decline hidden">Not now</button>
+      <button class="consent-banner-review">Review</button>
+      <button class="consent-banner-dismiss" aria-label="Dismiss consent notice">Dismiss</button>
+    </div>
+    <header class="header">
+      <div class="header-left">
+        <button id="toggle-sidebar-btn" class="icon-btn" title="Conversations (Ctrl+Shift+S)" aria-label="Toggle conversations sidebar" aria-haspopup="true" aria-expanded="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="15" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <rect x="3" y="4" width="18" height="14" rx="2" ry="2" fill="currentColor" opacity="0.2"/>
+            <rect x="3" y="4" width="18" height="14" rx="2" ry="2"/>
+            <rect x="5" y="6" width="14" height="8" fill="currentColor" opacity="0.3"/>
+            <circle cx="12" cy="15" r="2" fill="currentColor"/>
+            <path d="M14.5 3h-5l-1 1.5h7l-1-1.5z" fill="currentColor"/>
+            <circle cx="18" cy="10" r="1.5" fill="currentColor" opacity="0.7"/>
+            <circle cx="18" cy="10" r="0.8" stroke="currentColor" stroke-width="0.5"/>
+            <path d="M17.3 8.3l1.2-1.2M18.5 10l1.2-1.2M19.1 11.8l1.2-1.2" stroke="currentColor" stroke-width="0.5"/>
+          </svg>
+          <span>CTRL</span>
+        </div>
+      </div>
+      
+      <div class="header-center">
+        <div class="model-selector-wrapper">
+          <select id="model-select" class="model-select" aria-label="Select AI model">
+            <!-- Models will be dynamically inserted here -->
+          </select>
+          <svg class="model-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="new-chat-dropdown">
+          <button id="new-chat-btn" class="icon-btn" title="New Chat" aria-label="New chat options" aria-haspopup="menu" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              <line x1="12" y1="9" x2="12" y2="15"></line>
+              <line x1="9" y1="12" x2="15" y2="12"></line>
+            </svg>
+          </button>
+          <div id="new-chat-menu" class="dropdown-menu hidden" role="menu" aria-label="New chat options">
+            <button class="dropdown-item" role="menuitem" data-action="new">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              New Chat
+            </button>
+            <button class="dropdown-item" role="menuitem" data-action="save">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save Current
+            </button>
+            <button class="dropdown-item" role="menuitem" data-action="load">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Load Previous
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" role="menuitem" data-action="export">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+              Export Chat
+            </button>
+            <button class="dropdown-item" role="menuitem" data-action="import">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Import Chat
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" role="menuitem" data-action="clear">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Clear All
+            </button>
+          </div>
+        </div>
+        
+        <span id="token-usage" class="token-usage-badge hidden" role="status" aria-live="polite" aria-atomic="true"></span>
+        <span id="cost-usage" class="cost-usage-badge hidden" role="status" aria-live="polite" aria-atomic="true"></span>
+
+        <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Browser Status Bar -->
+    <div id="web-agent-status" class="browser-status-bar" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="status-text">Browser Agent Active</span>
+      <span class="status-tab" id="status-tab-title"></span>
+      <span class="approval-count hidden" id="approval-count" aria-label="Pending approvals">0</span>
+      <button class="disconnect-btn" id="disconnect-agent-btn" aria-label="Disconnect browser agent">Disconnect</button>
+    </div>
+
+    <!-- Conversation Sidebar -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+    <div id="conv-sidebar" class="conv-sidebar collapsed" role="dialog" aria-label="Conversation history">
+      <div class="sidebar-header">
+        <h3>Conversations</h3>
+        <button class="icon-btn" id="close-sidebar" title="Close sidebar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="sidebar-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sidebar-search-icon" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="conv-search" placeholder="Search conversations..." autocomplete="off" aria-label="Search conversations">
+      </div>
+      <div class="sidebar-tag-filters" id="conv-tag-filters" role="group" aria-label="Filter conversations by tag" hidden></div>
+      <div class="sidebar-date-filters" id="conv-date-filters" role="group" aria-label="Filter by date"></div>
+      <div id="conv-result-count" class="sidebar-result-count" hidden aria-live="polite"></div>
+      <div class="sidebar-list" id="conv-list">
+        <div class="sidebar-empty">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4" aria-hidden="true" focusable="false">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <p>No saved conversations</p>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost btn-full" id="new-chat-sidebar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          New Chat
+        </button>
+      </div>
+    </div>
+
+    <main id="chat-container" class="chat-container" role="main">
+      <h1 class="sr-only">CTRL Assistant</h1>
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-label="Chat messages">
+        <div class="welcome-screen" id="welcome-screen">
+          <div class="welcome-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <rect x="4" y="8" width="40" height="28" rx="3" ry="3" fill="currentColor" opacity="0.15"/>
+              <rect x="4" y="8" width="40" height="28" rx="3" ry="3"/>
+              <rect x="7" y="11" width="34" height="16" fill="currentColor" opacity="0.25"/>
+              <path d="M16 40h-2l-1 3h4l-1-3z" fill="currentColor"/>
+              <path d="M34 40h-2l-1 3h4l-1-3z" fill="currentColor"/>
+              <circle cx="24" cy="34" r="2" fill="currentColor"/>
+              <path d="M14 36h20" stroke-width="1"/>
+              <circle cx="36" r="5" cy="16" fill="currentColor" opacity="0.2"/>
+              <circle cx="36" cy="16" r="3.5"/>
+              <circle cx="36" cy="16" r="1.5" fill="currentColor"/>
+              <path d="M34.5 14l-2-2M37.5 14l2-2M34.5 18l-2 2M37.5 18l2 2" stroke-width="0.8"/>
+            </svg>
+          </div>
+          <h2>How can I help?</h2>
+          <p>I can answer questions, analyze pages, and write code.</p>
+          
+          <div class="quick-actions">
+            <button class="quick-action" data-prompt="Summarize the key points of this page">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Summarize</span>
+            </button>
+            <button class="quick-action" data-prompt="Explain this code in plain English">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              <span>Explain</span>
+            </button>
+            <button class="quick-action" data-prompt="Search the web for the latest news on ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Search</span>
+            </button>
+            <button class="quick-action" data-prompt="Write code to ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>Write Code</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="streaming-indicator" class="streaming-indicator hidden" role="status" aria-live="polite">
+        <div class="streaming-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="sr-only">Assistant is responding…</span>
+        <button id="stop-stream-btn" class="btn-stop">Stop generating</button>
+      </div>
+    </div>
+
+    <div id="approval-container" class="approval-container" role="region" aria-live="polite" aria-label="Pending action approvals"></div>
+    <div id="command-autocomplete" class="command-autocomplete hidden" role="listbox" aria-label="Command suggestions"></div>
+
+    <footer class="input-wrapper">
+
+      <!-- Action Bar (Reasoning Modes) -->
+      <div class="action-bar" role="group" aria-label="Reasoning mode">
+        <button class="mode-btn active" data-mode="smart" title="Fast & accurate" aria-pressed="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          Smart
+        </button>
+        <button class="mode-btn" data-mode="reasoning" title="Complex logic & coding" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path></svg>
+          Think
+        </button>
+        <button class="mode-btn" data-mode="study" title="Socratic tutor" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+          Study
+        </button>
+        <button class="mode-btn" data-mode="search" title="Web search grounded" aria-pressed="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          Search
+        </button>
+
+        <div class="action-bar-divider" role="separator"></div>
+
+        <button class="mode-btn web-agent-btn" id="web-agent-toggle" title="Toggle Browser Agent (Alt+Shift+B)" aria-pressed="false" aria-label="Toggle browser agent">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          Agent
+        </button>
+
+        <label class="context-pill" title="Include page content">
+          <input type="checkbox" id="include-context" checked aria-label="Include page content in context">
+          <svg class="pill-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span>Page</span>
+        </label>
+      </div>
+
+      <div id="image-preview-bar" class="image-preview-bar hidden" role="region" aria-label="Attached files"></div>
+
+      <div class="input-container">
+        <label for="message-input" class="sr-only">Message</label>
+        <textarea
+          id="message-input"
+          placeholder="Ask anything..."
+          rows="1"
+          autofocus
+        ></textarea>
+
+        <div class="input-actions">
+          <button id="attach-btn" class="icon-btn attach-btn" title="Attach Image / File" aria-label="Attach image or file">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+          </button>
+          <input type="file" id="file-input" accept="image/*,.pdf,.csv,.txt,.md,.js,.ts,.json,.py,.code" multiple hidden aria-label="File upload input" />
+          <button id="mic-btn" class="icon-btn mic-btn" title="Voice Input" aria-label="Voice input" aria-pressed="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+          </button>
+          <span id="mic-listening-label" class="mic-listening-label hidden" role="status" aria-live="polite">Listening…</span>
+          <button id="send-btn" class="send-btn" title="Send (Enter)" aria-label="Send message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="code-pane" class="code-pane hidden" role="dialog" aria-label="Code and output pane">
+    <div class="drawer-handle" id="drawer-handle" title="Toggle code pane (Ctrl/Cmd+J)">
+      <div class="drawer-handle-bar"></div>
+    </div>
+    <div class="code-pane-header">
+      <div class="code-pane-tabs">
+        <button class="code-tab active" data-tab="output">Output</button>
+        <button class="code-tab" data-tab="terminal">Terminal</button>
+        <button class="code-tab" data-tab="preview">Preview</button>
+      </div>
+      <div class="code-pane-actions">
+        <button id="close-code-pane" class="icon-btn" title="Close (Ctrl/Cmd+J)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+    <div class="code-pane-body">
+      <div id="tab-output" class="code-tab-content">
+        <div id="code-output" class="code-output"><div class="output-empty">No output yet. Use agent commands like <code>/slides</code>, <code>/research</code>, <code>/mvp</code> to generate content.</div></div>
+      </div>
+      <div id="tab-terminal" class="code-tab-content hidden">
+        <div class="terminal-container">
+          <div id="terminal-output" class="terminal-output"></div>
+          <div class="terminal-input-line">
+            <span class="terminal-prompt-symbol">$</span>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Type a command..." autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div id="tab-preview" class="code-tab-content hidden">
+        <iframe id="preview-sandbox" class="preview-frame" sandbox="allow-scripts allow-downloads allow-popups allow-forms" title="Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-toast" class="error-toast hidden" role="alert" aria-live="assertive"></div>
+  <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+  <div id="confirm-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal-backdrop" data-close="confirm-modal"></div>
+    <div class="modal-content confirm-modal">
+      <h3 id="confirm-title">Confirm</h3>
+      <p id="confirm-message">Are you sure?</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" data-close="confirm-modal">Cancel</button>
+        <button id="confirm-ok" class="btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shortcuts-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+    <div class="modal-backdrop" data-close="shortcuts-modal"></div>
+    <div class="modal-content shortcuts-modal">
+      <h3 id="shortcuts-title">Keyboard Shortcuts</h3>
+      <dl class="shortcuts-list">
+        <dt>Alt+Shift+A</dt>
+        <dd>Open CTRL side panel</dd>
+        <dt>Alt+Shift+B</dt>
+        <dd>Toggle Browser Agent</dd>
+        <dt>Ctrl/Cmd+K</dt>
+        <dd>Open command palette</dd>
+        <dt>Ctrl/Cmd+Shift+S</dt>
+        <dd>Toggle conversation sidebar</dd>
+        <dt>Ctrl/Cmd+J</dt>
+        <dd>Toggle code pane</dd>
+        <dt>/</dt>
+        <dd>Focus sidebar search (opens sidebar if closed)</dd>
+        <dt>Enter</dt>
+        <dd>Send message</dd>
+        <dt>Shift+Enter</dt>
+        <dd>New line in message</dd>
+        <dt>Escape</dt>
+        <dd>Close sidebar / dialog</dd>
+        <dt>?</dt>
+        <dd>Show this shortcuts list</dd>
+      </dl>
+      <div class="modal-actions">
+        <button class="btn-secondary" data-close="shortcuts-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="agent-review-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="agent-review-title">
+    <div class="modal-backdrop" data-close="agent-review-modal"></div>
+    <div class="modal-content agent-review-modal">
+      <div class="agent-review-header">
+        <h3 id="agent-review-title">Create Agent Preset</h3>
+        <button class="agent-review-close" data-close="agent-review-modal" aria-label="Close">&times;</button>
+      </div>
+      <div id="agent-review-loading" class="agent-review-loading">
+        <div class="spinner"></div>
+        <p>Analyzing conversation and generating agent preset...</p>
+      </div>
+      <div id="agent-review-content" class="agent-review-content hidden">
+        <p class="agent-review-desc">Review and edit the generated system prompt below, then save as a reusable agent preset.</p>
+        <label for="agent-review-name">Agent Name</label>
+        <input type="text" id="agent-review-name" class="agent-review-name" placeholder="My Agent" maxlength="60">
+        <label for="agent-review-prompt">System Prompt</label>
+        <textarea id="agent-review-prompt" class="agent-review-prompt" rows="10" placeholder="You are a helpful..."></textarea>
+        <div id="agent-review-suggestions" class="agent-review-suggestions hidden">
+          <h4>Suggested Adjustments</h4>
+          <div id="agent-review-suggestions-content"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" data-close="agent-review-modal">Cancel</button>
+          <button id="agent-review-save" class="btn-primary">Save Agent Preset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="../platform/browser-api.js"></script>
+  <script src="../lib/papaparse.min.js"></script>
+  <script src="../lib/xlsx.full.min.js"></script>
+  <script src="../lib/pptxgen.bundle.js"></script>
+  <script src="../lib/marked.min.js"></script>
+
+  <script src="../lib/purify.min.js"></script>
+  <script src="../lib/highlight.min.js"></script>
+  <script src="sidepanel.js" type="module"></script>
+</body>
+</html>

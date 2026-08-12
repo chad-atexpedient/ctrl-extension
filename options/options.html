@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTRL Extension - Settings</title>
+  <link rel="stylesheet" href="../styles/variables.css">
+  <link rel="stylesheet" href="../styles/components.css">
+  <link rel="stylesheet" href="../styles/themes.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="settings-container">
+    <header class="settings-header">
+      <h1>CTRL Extension Settings</h1>
+    </header>
+
+    <div class="settings-layout">
+    <nav class="settings-sidebar" aria-label="Settings navigation">
+      <ul class="sidebar-nav-list">
+        <li><a href="#section-provider" class="sidebar-nav-link">Provider Configuration</a></li>
+        <li><a href="#section-mcp" class="sidebar-nav-link">MCP Connections</a></li>
+        <li><a href="#section-chat" class="sidebar-nav-link">Chat Settings</a></li>
+        <li><a href="#section-presets" class="sidebar-nav-link">Agent Presets</a></li>
+        <li><a href="#section-context" class="sidebar-nav-link">Context Settings</a></li>
+        <li><a href="#section-display" class="sidebar-nav-link">Display Settings</a></li>
+        <li><a href="#section-spending" class="sidebar-nav-link">Spending</a></li>
+        <li><a href="#section-snippets" class="sidebar-nav-link">Prompt Snippets</a></li>
+        <li><a href="#section-agent" class="sidebar-nav-link">Browser Agent</a></li>
+        <li><a href="#section-data" class="sidebar-nav-link">Data Management</a></li>
+        <li><a href="#section-privacy" class="sidebar-nav-link">Privacy &amp; Consent</a></li>
+      </ul>
+    </nav>
+
+    <main class="settings-content">
+<section class="settings-section">
+        <h2 id="section-provider">Provider Configuration</h2>
+        <p class="section-desc">Select a provider to configure, add your API key, and select models. Your credentials are securely encrypted and stored locally.</p>
+        
+        <!-- Provider Selection Dropdown -->
+        <div class="provider-selection-container">
+          <div class="provider-selector-wrapper">
+            <label for="provider-select" class="provider-label">Select Provider:</label>
+            <select id="provider-select" class="provider-select">
+              <option value="">Choose a provider...</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="google">Google Gemini</option>
+              <option value="zai">Z.ai (GLM)</option>
+              <option value="meta">Meta Llama</option>
+              <option value="mistral">Mistral</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="minimax">MiniMax</option>
+              <option value="alibaba">Alibaba Cloud (Qwen)</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="groq">Groq</option>
+              <option value="custom">Custom URL</option>
+            </select>
+          </div>
+          
+          <button id="add-provider-btn" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18l-2 15H5L3 6z"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            Add Provider
+          </button>
+        </div>
+
+        <!-- Manage Models Button - Always Visible -->
+        <div class="manage-models-container" style="margin-bottom: 1.5rem;">
+          <button id="manage-models-btn" class="btn btn-outline manage-models-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Manage Models
+          </button>
+        </div>
+        
+        <!-- Provider Configuration Panel -->
+        <div id="provider-config-panel" class="provider-config-panel hidden">
+          <div class="provider-config-header">
+            <h3 id="selected-provider-name">Configure Your Provider</h3>
+            <div class="provider-status" id="provider-status-display" role="status" aria-live="polite"></div>
+          </div>
+          <div class="provider-config-fields">
+            <div class="field-group">
+              <label for="provider-api-key" class="field-label">API Key:</label>
+              <div class="input-wrapper">
+                <input type="password" id="provider-api-key" class="provider-api-key" placeholder="Enter your API key..." aria-describedby="provider-api-key-visibility-hint">
+                <button id="toggle-api-key-visibility" class="toggle-visibility" type="button" title="Show API key" aria-label="Show API key" aria-pressed="false" aria-controls="provider-api-key">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <span id="provider-api-key-visibility-hint" class="visually-hidden">Press the eye icon to toggle whether the API key is shown in plain text.</span>
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="provider-base-url" class="field-label">Base URL (optional):</label>
+              <input type="url" id="provider-base-url" class="provider-base-url" placeholder="Default URL will be used if empty">
+            </div>
+          </div>
+          <div class="provider-config-actions">
+            <button id="test-connection-btn" class="btn btn-secondary">Test Connection</button>
+            <button id="save-provider-btn" class="btn btn-primary">Save Configuration</button>
+          </div>
+        </div>
+        
+<!-- Saved Providers List -->
+        <div id="saved-providers-section" class="saved-providers-section hidden">
+          <h3>Saved Providers</h3>
+          <div id="saved-providers-list" class="saved-providers-list"></div>
+        </div>
+ 
+       </section>
+
+      <section class="settings-section">
+        <h2 id="section-mcp">MCP Connections</h2>
+        <p class="section-desc">Connect to Model Context Protocol servers for additional capabilities.</p>
+        
+        <div class="form-group">
+          <label for="mcp-type">MCP Type</label>
+          <select id="mcp-type" class="form-select">
+            <option value="">Select an MCP...</option>
+            <optgroup label="AI Providers">
+              <option value="claude-mcp">Claude MCP (Anthropic)</option>
+              <option value="openai-gpts">OpenAI GPTs</option>
+              <option value="gemini-extensions">Gemini Extensions</option>
+            </optgroup>
+            <optgroup label="Productivity">
+              <option value="notion">Notion</option>
+              <option value="slack">Slack</option>
+              <option value="github">GitHub</option>
+              <option value="jira">Jira</option>
+            </optgroup>
+            <optgroup label="Data & Storage">
+              <option value="google-drive">Google Drive</option>
+              <option value="dropbox">Dropbox</option>
+              <option value="postgres">PostgreSQL</option>
+            </optgroup>
+            <optgroup label="Custom">
+              <option value="local-http">Local HTTP Server</option>
+              <option value="webhook">Custom Webhook</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div id="mcp-config-fields">
+          <div class="form-group" id="mcp-name-group">
+            <label for="mcp-name">Connection Name</label>
+            <input type="text" id="mcp-name" placeholder="My MCP Connection">
+          </div>
+
+          <div class="form-group" id="mcp-url-group" style="display:none;">
+            <label for="mcp-url">Server URL</label>
+            <input type="url" id="mcp-url" placeholder="http://localhost:3000">
+            <p class="form-help">URL of the MCP server</p>
+          </div>
+
+          <div class="form-group" id="mcp-api-key-group" style="display:none;">
+            <label for="mcp-api-key">API Key</label>
+            <input type="password" id="mcp-api-key" placeholder="Enter API key">
+            <p class="form-help">API key for the MCP service</p>
+          </div>
+
+          <div class="form-group" id="mcp-command-group" style="display:none;">
+            <label for="mcp-command">Command</label>
+            <input type="text" id="mcp-command" placeholder="npx">
+            <p class="form-help">Command to run the MCP server</p>
+          </div>
+
+          <div class="form-group" id="mcp-args-group" style="display:none;">
+            <label for="mcp-args">Arguments</label>
+            <input type="text" id="mcp-args" placeholder="-y @anthropic/mcp-server">
+            <p class="form-help">Arguments for the MCP command</p>
+          </div>
+
+          <div class="form-group" id="mcp-webhook-group" style="display:none;">
+            <label for="mcp-webhook-url">Webhook URL</label>
+            <input type="url" id="mcp-webhook-url" placeholder="https://your-webhook.com/endpoint">
+            <p class="form-help">Your webhook endpoint URL</p>
+          </div>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 8px;">
+          <button id="add-mcp-btn" class="btn btn-primary">Add Connection</button>
+          <button id="test-mcp-btn" class="btn btn-secondary">Test Connection</button>
+        </div>
+        <span id="mcp-status" class="status-message" role="status" aria-live="polite"></span>
+
+        <div id="mcp-connections-list" class="mcp-connections-list">
+          <!-- Connected MCPs will be listed here -->
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-chat">Chat Settings</h2>
+
+        <div class="form-group">
+          <label for="temperature">Temperature: <span id="temperature-value">0.7</span></label>
+          <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+          <p class="form-help">Controls randomness (0 = focused, 2 = creative)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="max-tokens">Max Tokens</label>
+          <input type="number" id="max-tokens" min="100" max="32000" value="2000" step="100">
+          <p class="form-help">Maximum response length</p>
+        </div>
+
+        <div class="form-group">
+          <label for="system-prompt">System Prompt</label>
+          <textarea id="system-prompt" rows="3" placeholder="You are a helpful AI assistant..."></textarea>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="streaming" checked>
+            <span>Enable streaming responses</span>
+          </label>
+          <p class="form-help">Show AI responses as they're being generated</p>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-presets">Agent Presets</h2>
+        <p class="section-desc">Agents saved from chat with "Save as Agent". Select one to load it as the system prompt, or edit/delete it here.</p>
+
+        <div class="form-group">
+          <label for="preset-select">Saved Agents</label>
+          <div class="preset-row">
+            <select id="preset-select" class="preset-select">
+              <option value="">— Select a saved agent —</option>
+            </select>
+            <button id="preset-load" class="btn-secondary" disabled>Load as System Prompt</button>
+          </div>
+          <p class="form-help">"Load" copies the agent's system prompt into the Chat Settings above. Select an agent to edit or delete it.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="preset-name-edit">Name</label>
+          <input type="text" id="preset-name-edit" maxlength="60" disabled>
+        </div>
+
+        <div class="form-group">
+          <label for="preset-prompt-edit">System Prompt</label>
+          <textarea id="preset-prompt-edit" rows="6" disabled></textarea>
+        </div>
+
+        <div class="preset-actions">
+          <button id="preset-save-changes" class="btn-secondary" disabled>Save Changes</button>
+          <button id="preset-delete" class="btn-danger" disabled>Delete</button>
+        </div>
+
+        <p class="preset-empty" id="preset-empty">No saved agents yet. In the side panel, hover over an AI response and click "Save as Agent" to create one.</p>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-context">Context Settings</h2>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="include-page-content">
+            <span>Include page content by default</span>
+          </label>
+          <p class="form-help">Automatically include page content when sending messages</p>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="memory-enabled" checked>
+            <span>Conversation memory (RAG)</span>
+          </label>
+          <p class="form-help">Inject relevant snippets from your saved conversations into each chat as context</p>
+        </div>
+
+        <div class="form-group">
+          <label for="context-length">Context Length Limit</label>
+          <input type="number" id="context-length" min="1000" max="10000" value="4000" step="500">
+          <p class="form-help">Maximum characters to include from page content</p>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-display">Display Settings</h2>
+
+        <div class="form-group" id="mic-permission-section" style="display: none; padding: 16px; background: var(--accent-light); border: 1px solid var(--accent-subtle); border-radius: var(--radius-md); margin-bottom: 20px;">
+          <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+            Microphone Access Required
+          </h3>
+          <p style="margin-bottom: 12px; color: var(--text-secondary);">To use voice-to-text in the sidepanel, please click the button below and click "Allow" when the browser asks for microphone permission.</p>
+          <button id="grant-mic-btn" class="btn btn-primary" type="button">Grant Microphone Access</button>
+          <p id="mic-status" role="status" aria-live="polite" style="margin-top: 8px; font-weight: 500; font-size: 13px;"></p>
+        </div>
+
+        <div class="form-group">
+          <label for="theme">Theme</label>
+          <select id="theme">
+            <optgroup label="Standard Themes">
+              <option value="system">System Default</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="blue">Tech Blue 🔵</option>
+              <option value="purple">Creative Purple 🟣</option>
+              <option value="green">Mint Emerald 🟢</option>
+              <option value="red-black">Crimson Void 🔴</option>
+            </optgroup>
+            
+            <optgroup label="Cinematic & Immersive">
+              <option value="nebula">Midnight Nebula 🌌</option>
+              <option value="cyberpunk">Cyberpunk 🤖</option>
+              <option value="synthwave">Sci-Fi Grid 🚀</option>
+              <option value="noir">Noir Detective 🕵️‍♂️</option>
+              <option value="dune">Desert Planet 🏜️</option>
+            </optgroup>
+
+            <optgroup label="Feminine & Minimalist">
+              <option value="blossom">Cherry Blossom 🌸</option>
+              <option value="matcha">Matcha Macaron 🍵</option>
+              <option value="lavender">Lavender Haze ✨</option>
+              <option value="oat">Oat Milk Minimal ☕</option>
+            </optgroup>
+
+            <optgroup label="Cool & Dynamic">
+              <option value="rainforest">Rainforest 🌿</option>
+              <option value="ocean">Deep Ocean 🌊</option>
+              <option value="sunset">Sunset 🌅</option>
+              <option value="glacial">Arctic Ice 🧊</option>
+              <option value="magma">Magma Obsidian 🌋</option>
+              <option value="tokyo">Tokyo Midnight 🌆</option>
+              <option value="parchment">Dark Academia 📜</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Display Density</label>
+          <div class="density-options" role="radiogroup" aria-label="Display Density">
+            <label class="density-option">
+              <input type="radio" name="density" id="density-compact" value="compact">
+              <span>Compact</span>
+            </label>
+            <label class="density-option">
+              <input type="radio" name="density" id="density-comfortable" value="comfortable" checked>
+              <span>Comfortable</span>
+            </label>
+          </div>
+          <p class="form-help">Compact reduces spacing and font size for denser layouts; Comfortable increases them for easier reading</p>
+        </div>
+
+        <div class="form-group">
+          <label for="custom-logo">Custom Branding Logo (Optional)</label>
+          <input type="file" id="custom-logo" accept="image/*">
+          <p class="form-help">Upload an image to replace the default CTRL logo in the UI. Max size: 500KB.</p>
+          <div id="logo-preview-container" class="hidden" style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+             <img id="logo-preview" src="" alt="Logo Preview" style="max-width: 48px; max-height: 48px; border-radius: 4px; border: 1px solid var(--border-color);">
+             <button id="remove-logo" class="btn btn-secondary btn-sm" type="button" style="padding: 4px 8px; font-size: 12px;">Remove</button>
+          </div>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="auto-scroll" checked>
+            <span>Auto-scroll to new messages</span>
+          </label>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="show-timestamps" checked>
+            <span>Show message timestamps</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="panel-width">Side Panel Width</label>
+          <select id="panel-width">
+            <option value="320">Small (320px)</option>
+            <option value="400" selected>Medium (400px)</option>
+            <option value="520">Large (520px)</option>
+            <option value="640">Extra Large (640px)</option>
+          </select>
+          <p class="form-help">Wider panels give more room to code output, slides, and data charts. Takes effect when you reopen the side panel.</p>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-spending">Spending</h2>
+        <p class="section-desc">Track your API usage and costs across all providers. Costs are estimated based on published per-model pricing.</p>
+
+        <div id="spend-dashboard" class="spend-dashboard">
+          <div class="spend-summary" id="spend-summary">
+            <div class="spend-stat">
+              <span class="spend-stat-label">Session Cost</span>
+              <span class="spend-stat-value" id="spend-session">$0.00</span>
+            </div>
+            <div class="spend-stat">
+              <span class="spend-stat-label">Last 7 Days</span>
+              <span class="spend-stat-value" id="spend-week">$0.00</span>
+            </div>
+            <div class="spend-stat">
+              <span class="spend-stat-label">Last 30 Days</span>
+              <span class="spend-stat-value" id="spend-month">$0.00</span>
+            </div>
+          </div>
+
+          <div class="spend-breakdown" id="spend-breakdown">
+            <h3>By Provider (30 days)</h3>
+            <div id="spend-provider-list" class="spend-provider-list">
+              <p class="form-help">No spending data yet. Start a conversation to begin tracking.</p>
+            </div>
+          </div>
+
+          <div class="spend-chart-container" id="spend-chart-container">
+            <h3>Daily Spend</h3>
+            <canvas id="spend-chart" width="600" height="200"></canvas>
+          </div>
+
+          <div class="spend-actions">
+            <button id="export-spend-btn" class="btn btn-secondary" type="button">Export CSV</button>
+            <button id="clear-spend-btn" class="btn btn-secondary" type="button">Clear History</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-snippets">Prompt Snippets</h2>
+        <p class="section-desc">Reusable prompt templates. Type the trigger (e.g. <code>/summarize</code>) in the chat input to expand the snippet.</p>
+
+        <div id="snippet-list" class="snippet-list">
+          <p class="form-help">Loading snippets...</p>
+        </div>
+
+        <div class="snippet-add-form" id="snippet-add-form">
+          <h3>Add Custom Snippet</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="snippet-name">Name</label>
+              <input type="text" id="snippet-name" placeholder="My Snippet" maxlength="50">
+            </div>
+            <div class="form-group">
+              <label for="snippet-trigger">Trigger</label>
+              <input type="text" id="snippet-trigger" placeholder="/mysnippet" maxlength="30">
+              <p class="form-help">Must start with /</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="snippet-content">Content</label>
+            <textarea id="snippet-content" rows="3" placeholder="The prompt text to insert..." maxlength="2000"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="snippet-category">Category</label>
+            <select id="snippet-category">
+              <option value="general">General</option>
+              <option value="writing">Writing</option>
+              <option value="code">Code</option>
+              <option value="analysis">Analysis</option>
+            </select>
+          </div>
+          <button id="add-snippet-btn" class="btn btn-primary" type="button">Add Snippet</button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-agent">Browser Agent</h2>
+        <p class="section-desc">Configure browser automation. The Web Agent lets the AI control the active tab — navigate, click, type, and take screenshots.</p>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="agent-confirm-actions" checked>
+            <span>Require confirmation for destructive actions</span>
+          </label>
+          <p class="form-help">AI will ask before submitting forms, making purchases, or deleting content</p>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="agent-screenshot-quality">
+            <span>High quality screenshots (larger context)</span>
+          </label>
+          <p class="form-help">Send full-page screenshots instead of viewport-only (uses more tokens)</p>
+        </div>
+
+        <h3 style="margin-top: 1.5rem;">Desktop Companion Relay (Optional)</h3>
+        <p class="section-desc">Connect to a desktop companion app for multi-tab control and external Playwright access.</p>
+
+        <div class="form-group">
+          <label for="relay-port">Relay Port</label>
+          <input type="number" id="relay-port" min="1024" max="65535" value="18792">
+          <p class="form-help">Port for the local relay server (default: 18792)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="relay-token">Relay Token</label>
+          <input type="password" id="relay-token" placeholder="Gateway token from desktop companion">
+          <p class="form-help">Authentication token for the relay server</p>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 8px;">
+          <button id="relay-connect-btn" class="btn btn-primary">Connect Relay</button>
+          <button id="relay-disconnect-btn" class="btn btn-secondary">Disconnect</button>
+          <button id="relay-test-btn" class="btn btn-secondary">Test Connection</button>
+        </div>
+        <span id="relay-status" class="status-message" role="status" aria-live="polite"></span>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-data">Data Management</h2>
+
+        <div class="form-group">
+          <button id="clear-history" class="btn btn-secondary">Clear Chat History</button>
+        </div>
+
+        <div class="form-group">
+          <button id="export-settings" class="btn btn-secondary">Export Settings</button>
+          <button id="import-settings" class="btn btn-secondary">Import Settings</button>
+          <input type="file" id="import-file" accept=".json" hidden>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h2 id="section-privacy">Privacy &amp; Consent</h2>
+        <p class="section-desc">Review and manage what CTRL Extension is allowed to do with your data. All data stays local to your device — see the Privacy Policy for full details.</p>
+
+        <div id="consent-settings-list" class="consent-settings-list">
+          <!-- Consent type rows will be rendered here -->
+        </div>
+
+        <div class="form-group">
+          <button id="review-privacy-policy-btn" class="btn btn-secondary" type="button">Review Privacy Policy</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="settings-footer">
+      <button id="save-settings" class="btn btn-primary">Save Settings</button>
+    </footer>
+    </div><!-- /.settings-layout -->
+   </div>
+
+   <div id="model-selector-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="model-selector-title">
+     <div class="modal-backdrop" data-close="model-selector-modal"></div>
+     <div class="modal-content">
+       <div class="modal-header">
+         <h3 id="model-selector-title">Select Models for Provider</h3>
+         <button class="modal-close" data-close="model-selector-modal" type="button" aria-label="Close model selector">
+           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+             <line x1="18" y1="6" x2="6" y2="18"></line>
+             <line x1="6" y1="6" x2="18" y2="18"></line>
+           </svg>
+         </button>
+       </div>
+          <div id="model-selector-header-container" class="modal-body">
+            <p class="section-desc">Select up to 2 models from this provider.</p>
+            <div id="model-selector-list" class="model-selector-list">
+              <p style="color: var(--text-muted); text-align: center; padding: 20px;">Loading models...</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <span id="model-selection-count" class="selection-count" role="status" aria-live="polite">0/2 selected</span>
+            <div class="modal-footer-buttons">
+              <button type="button" class="btn btn-sm btn-secondary" id="clear-models-btn">Clear</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="pull-models-btn" title="Refresh models from API">
+                <span class="refresh-icon">🔄</span>
+                <span class="btn-text">Refresh</span>
+              </button>
+              <button class="btn btn-secondary" data-close="model-selector-modal">
+                Cancel
+              </button>
+              <button id="save-models-btn" class="btn btn-primary">
+                Save Models
+              </button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+   <script src="../platform/browser-api.js"></script>
+   <script src="options.js" type="module"></script>
+ </body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extensionName__",
+  "short_name": "CTRL",
+  "version": "1.1.0",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: ws://127.0.0.1:* ws://localhost:* http://127.0.0.1:* http://localhost:*; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "debugger",
+    "notifications",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.z.ai/*",
+    "https://api.meta.ai/*",
+    "https://api.mistral.ai/*",
+    "https://api.deepseek.com/*",
+    "https://api.minimax.io/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://dashscope.aliyuncs.com/*",
+    "https://openrouter.ai/*",
+    "https://api.groq.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Open CTRL",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "options_page": "options/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "PRIVACY-POLICY.md"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "sandbox": {
+    "pages": [
+      "sandbox/sandbox.html"
+    ]
+  },
+  "commands": {
+    "open-sidepanel": {
+      "suggested_key": {
+        "default": "Alt+Shift+A",
+        "mac": "Alt+Shift+A"
+      },
+      "description": "__MSG_openSidepanelCommand__"
+    },
+    "toggle-browser-agent": {
+      "suggested_key": {
+        "default": "Alt+Shift+B",
+        "mac": "Alt+Shift+B"
+      },
+      "description": "__MSG_toggleBrowserAgentCommand__"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "platform/browser-api.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAptFezEnCdMuLcn/OD+nt3Q53b0u0odUn0iAPPfpK8alfdMZpj0+rajf+Mncpd5OsD+TjLz2QwhkdvIMGd7RF/iENDc6Q4eLqqi91NkJl6QgCg9fhY4QMSS6xEiy9VfjvbPEndm+T7XAuP9NsRFUMU5Vw4xAQNWnVcM1+6rg8cxUtcG2CjdUbzNRT+LVXBEaLUBi+h3M/B2HgDgeAjWYkDyizglI7JHmJEmaqOjuUc/FqniDHsl1t6YLAPDa9kRG7lqxlSHXDYPr3yL66CguLQ7lydEwSMFXN3HoUvk/kPP3l2ptKdx4uxnVfdaLcwAiiFdKoI0j/gSFfTdwuFqttywIDAQAB"
+}

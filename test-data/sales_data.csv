@@ -1,0 +1,13 @@
+month,sales,expenses,profit,category
+January,15000,8000,7000,Electronics
+February,18000,9500,8500,Electronics
+March,22000,11000,11000,Electronics
+April,19000,9000,10000,Electronics
+May,25000,12000,13000,Electronics
+June,28000,14000,14000,Electronics
+July,32000,16000,16000,Electronics
+August,35000,18000,17000,Electronics
+September,30000,15000,15000,Electronics
+October,28000,13000,15000,Electronics
+November,40000,20000,20000,Electronics
+December,45000,22000,23000,Electronics
