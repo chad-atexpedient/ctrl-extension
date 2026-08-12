@@ -50,20 +50,39 @@ const EXAMPLE_CONVERSATIONS = [
 /**
  * Seeds example conversations into storage on first install.
  * Only writes if no conversations exist yet.
+ *
+ * IMPORTANT: `conversations` in chrome.storage.local is an object keyed by
+ * conversation name — {[name]: {history, timestamp, pinned, tags}} — per
+ * utils/storage.js (saveConversation/getConversations/deleteConversation)
+ * and the SAVE_CONVERSATIONS_BULK handler in background/service-worker.js.
+ * The sidebar UI only ever sees the *array* shape produced by the
+ * GET_CONVERSATIONS message handler, which derives it from this object at
+ * the message boundary — it is not the storage format. An earlier version
+ * of this function wrote an array directly, which both broke "already
+ * seeded" detection (arrays don't have meaningful truthy .length checks
+ * against this object-shaped default) and risked silently dropping any
+ * conversation a user saved afterward, since assigning conversations[name]
+ * = data onto an array sets a non-index property that JSON.stringify drops
+ * on the next chrome.storage.local.set.
  */
 async function seedExampleConversations() {
   try {
     const data = await chrome.storage.local.get('conversations')
-    const existing = data.conversations || []
+    const existing = data.conversations || {}
 
-    if (existing.length > 0) return false // Already has conversations
+    if (Object.keys(existing).length > 0) return false // Already has conversations
 
     const now = Date.now()
-    const seeded = EXAMPLE_CONVERSATIONS.map((conv, i) => ({
-      ...conv,
-      createdAt: now - (EXAMPLE_CONVERSATIONS.length - i) * 3600000,
-      updatedAt: conv.history[conv.history.length - 1]?.timestamp || now,
-    }))
+    const seeded = {}
+    EXAMPLE_CONVERSATIONS.forEach((conv, i) => {
+      seeded[conv.name] = {
+        history: conv.history,
+        timestamp: conv.history[conv.history.length - 1]?.timestamp || now,
+        pinned: !!conv.pinned,
+        tags: Array.isArray(conv.tags) ? conv.tags : [],
+        createdAt: now - (EXAMPLE_CONVERSATIONS.length - i) * 3600000,
+      }
+    })
 
     await chrome.storage.local.set({ conversations: seeded })
     return true
