@@ -1,120 +1,137 @@
-# AI Chat Extension
+<div align="center">
 
-A browser extension that provides an in-window AI chat interface using OpenAI-compatible APIs.
+# CTRL Extension
 
-## Features
+**An AI agent that lives in your browser — not a chat window bolted onto the side of one.**
 
-- **Side Panel Chat**: Chat with AI directly from your browser's side panel
-- **Context Awareness**: Include current page content or selected text in your conversations
-- **OpenAI Compatible**: Works with OpenAI API, Azure OpenAI, and other compatible providers
-- **Secure Storage**: API keys are encrypted and stored locally in your browser
-- **Quick Actions**: Summarize pages, explain code, or get context with one click
-- **Keyboard Shortcuts**: Use `Alt+Shift+A` to open the chat
-- **Settings Management**: Export and import your settings
+CTRL reads the page you're on, writes and runs code, builds slide decks and spreadsheets,
+drives the browser itself when you ask it to, and keeps a searchable memory of how you work —
+all from a side panel, with the AI provider of your choice.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/chad-atexpedient/ctrl-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/chad-atexpedient/ctrl-extension/actions/workflows/ci.yml)
+![Version](https://img.shields.io/badge/version-1.1.1-blue)
+[![Chrome · Firefox · Safari](https://img.shields.io/badge/Chrome%20%C2%B7%20Firefox%20%C2%B7%20Safari-supported-6e56cf)](DISTRIBUTION.md)
+
+[Install](#installation) · [What it does](#what-it-does) · [Providers](#bring-your-own-model) · [Docs site](https://chad-atexpedient.github.io/ctrl-extension/) · [Contributing](CONTRIBUTING.md)
+
+</div>
+
+---
+
+## See it in action
+
+> **You:** Summarize the open issues on this page, then turn the top 3 into a slide deck.
+>
+> **Claude:** Found 14 open issues. Top 3 by comment activity:
+>
+> 1. **Auto-resize breaks on paste** — textarea doesn't grow for multi-line pastes (12 comments)
+> 2. **Dark theme badge contrast** — fails WCAG AA on two badge variants (9 comments)
+> 3. **`Ctrl+Shift+S` shortcut collision** — conflicts with a common browser binding (7 comments)
+>
+> Building a 3-slide deck now — opening it in the code pane. Want a tracking issue filed for each one too?
+
+*Claude is shown here as the example model — CTRL talks to it, OpenAI, Gemini, DeepSeek, Groq, or
+anything else the same way. See [Bring your own model](#bring-your-own-model).*
+
+<p align="center">
+  <img src="store-assets/screenshots/01-sidepanel-chat.png" width="720" alt="CTRL side panel chat interface">
+</p>
+
+## What it does
+
+- **Context-aware chat** — pull in the current page or a text selection so you're never
+  explaining what you're looking at
+- **Browser agent** — a Chrome DevTools Protocol–driven agent that can navigate, click, type,
+  screenshot, and fill in forms, with an explicit approval step before anything it does could
+  change something
+- **20+ built-in tool skills** — a code interpreter, Excel/CSV/JSON tools, slide deck and
+  document generation, chart building, a regex tester, a web scraper, git automation, PDF
+  tools, and more, all callable straight from chat
+- **MCP client** — connect Model Context Protocol servers for still more tools without waiting
+  on us to build them in
+- **Slash commands & prompt snippets** — `/summarize`, `/explain`, `/slides`, `/mvp`, `/code`,
+  plus a full command palette (`Ctrl+K`) and reusable snippet triggers
+- **Real conversation memory** — searchable, taggable, pinnable history with export/import, not
+  a chat log that vanishes when you close the panel
+- **24+ themes** — light, dark, cinematic, terminal, and more, plus a compact density mode
+- **Bring your own model** — your API key is encrypted (AES-256-GCM) and stored locally; it's
+  never sent anywhere except the provider you chose
+
+## Bring your own model
+
+CTRL doesn't sell you tokens — connect the provider you already use:
+
+| Provider | Notes |
+|---|---|
+| **Anthropic (Claude)** | Claude 4.5, Claude 4 |
+| OpenAI | GPT-5o, GPT-4o, o1 |
+| Google Gemini | 2.5, 2.0, 1.5 |
+| DeepSeek | V3, R1 |
+| Groq | Mixtral, Llama |
+| OpenRouter | multi-provider routing |
+| Mistral, z.ai, MiniMax, Alibaba (DashScope), Meta | and compatible custom endpoints |
+| Local | Ollama, LM Studio, or anything OpenAI-compatible on `localhost` |
 
 ## Installation
 
-### From Source (Development)
+CTRL isn't on a store yet — install it from source:
 
-1. Clone or download this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked"
-5. Select the extension directory
+1. Clone this repository (or download and unzip it)
+2. Open `chrome://extensions` (or the Firefox/Safari equivalent — see
+   [DISTRIBUTION.md](DISTRIBUTION.md) for per-browser packaging)
+3. Enable **Developer mode**
+4. Click **Load unpacked** and select the project folder
+5. Open the side panel (toolbar icon, or `Alt+Shift+A`) and add an API key when prompted
 
-## Configuration
+## Security & privacy, briefly
 
-1. Click the extension icon or press `Alt+Shift+A`
-2. Click the settings icon (⚙️) or "Set Up API Key" banner
-3. Enter your API details:
-   - **API Base URL**: For OpenAI use `https://api.openai.com/v1`
-   - **API Key**: Your OpenAI API key
-   - **Model**: Select your preferred model
-4. Click "Test Connection" to verify
-5. Click "Save Settings"
+- API keys are encrypted with AES-256-GCM before they touch disk
+- A strict extension-wide Content Security Policy, plus DOMPurify-sanitized rendering for
+  everything the model outputs
+- AI-generated previews (slide decks, mini web apps, reports) render inside a sandboxed,
+  network-isolated iframe — its CSP blocks outbound requests entirely, so generated code can't
+  phone home even if it tried
+- No analytics, no telemetry, nothing sent anywhere except the AI provider you configured
 
-## Usage
-
-### Opening the Chat
-
-- Click the extension icon in the toolbar
-- Use keyboard shortcut: `Alt+Shift+A`
-- Right-click any page → "Open AI Chat"
-
-### Including Page Context
-
-1. Select text on the page to include it as context
-2. Toggle "Include page content" checkbox to include full page content
-3. Send your message - the AI will have context about the current page
-
-### Quick Actions
-
-From the popup:
-- **Summarize**: Summarizes the current page content
-- **Explain**: Explains selected text or code
-- **Get Context**: Opens chat with context about the current page
-
-## Supported Models
-
-The extension works with any OpenAI-compatible API including:
-- OpenAI GPT models (GPT-3.5, GPT-4, o1)
-- Anthropic Claude models (via compatible endpoints)
-- Azure OpenAI
-- Self-hosted models (Ollama, LM Studio, etc.)
-
-## Security
-
-- API keys are encrypted using AES-GCM before storage
-- Keys never leave your browser
-- No data is sent to external servers except the AI API
-- All API calls are made from the extension's background service worker
-
-## Files Structure
-
-```
-ai-chat-extension/
-├── manifest.json           # Extension manifest
-├── background/
-│   └── service-worker.js  # Background service worker
-├── sidepanel/
-│   ├── sidepanel.html    # Main chat interface
-│   ├── sidepanel.css     # Chat styles
-│   └── sidepanel.js      # Chat logic
-├── content/
-│   ├── content.js        # Page context extraction
-│   └── content.css       # Content script styles
-├── popup/
-│   ├── popup.html        # Quick access popup
-│   ├── popup.css         # Popup styles
-│   └── popup.js          # Popup logic
-├── options/
-│   ├── options.html      # Settings page
-│   ├── options.css       # Settings styles
-│   └── options.js        # Settings logic
-└── utils/
-    ├── api-client.js     # API communication
-    ├── storage.js        # Secure storage
-    └── errors.js         # Error handling
-```
+Full details in [SECURITY.md](SECURITY.md) and [PRIVACY-POLICY.md](PRIVACY-POLICY.md).
 
 ## Development
 
 ```bash
 npm install         # install Playwright dev deps
-npm run lint        # static checks (version sync, console.log audit, XSS patterns)
-npm test            # 222 unit tests
-npm run test:ui     # Playwright E2E (requires `npx playwright install chromium`)
-npm run package     # → dist/ctrl-extension-v{ver}.zip for Chrome Web Store
-npm run verify      # lint + unit tests in one shot
+npm run lint         # static checks (version sync, console.log audit, XSS patterns)
+npm test             # 280 unit tests
+npm run test:ui      # Playwright E2E (requires `npx playwright install chromium`)
+npm run package       # → dist/ctrl-extension-v{ver}.zip for Chrome Web Store
+npm run verify        # lint + unit tests in one shot
 ```
 
-CI runs all of the above on push/PR via `.github/workflows/ci.yml`.
+CI runs all of the above on every push and PR via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture notes and PR checklist.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture notes and the PR checklist, and
+[ARCHITECTURE.md](ARCHITECTURE.md) for a deeper tour of how the pieces fit together.
 See [CHANGELOG.md](CHANGELOG.md) for release history.
-See [DISTRIBUTION.md](DISTRIBUTION.md) for Chrome, Edge, Firefox, Safari, and
-GitHub release packaging details.
+See [DISTRIBUTION.md](DISTRIBUTION.md) for Chrome, Edge, Firefox, Safari, and GitHub release
+packaging details.
+
+## Project layout
+
+```
+ctrl-extension/
+├── manifest.json          # Extension manifest (Chrome MV3)
+├── background/            # Service worker, CDP browser-agent controller
+├── sidepanel/              # Main chat UI, agent, sidebar, command palette
+├── content/                # Page context extraction (content script)
+├── popup/                  # Toolbar quick-actions popup
+├── options/                 # Settings page
+├── sandbox/                 # Sandboxed iframe for rendering generated previews
+├── utils/                   # API client, storage/encryption, skills registry, etc.
+│   └── skills/               # The 20+ built-in tool skills
+├── platform/                 # Per-browser manifest variants
+└── tests/                    # Unit (node:test) + Playwright E2E specs
+```
 
 ## License
 
-MIT License
+MIT — see [LICENSE](LICENSE).
