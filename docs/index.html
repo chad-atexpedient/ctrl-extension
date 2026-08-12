@@ -274,12 +274,15 @@
   /* ---------- Footer ---------- */
   footer{padding:52px 0 60px;border-top:1px solid var(--panel-border);}
   .footer-brand{
-    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
-    padding-bottom:32px;margin-bottom:32px;border-bottom:1px solid var(--panel-border);
+    display:flex;align-items:center;flex-wrap:wrap;gap:18px;
+    padding-bottom:28px;margin-bottom:32px;border-bottom:1px solid var(--panel-border);
   }
-  .footer-brand-mark{display:flex;align-items:center;gap:14px;}
-  .footer-brand-mark img{height:56px;width:auto;}
-  .footer-brand-text{font-size:13px;color:var(--text-dimmer);line-height:1.5;}
+  .footer-brand-mark{display:flex;align-items:center;flex:none;}
+  .footer-brand-mark img{height:48px;width:auto;display:block;}
+  .footer-brand-text{
+    font-size:13px;color:var(--text-dimmer);line-height:1.5;
+    padding-left:18px;border-left:1px solid var(--panel-border);
+  }
   .footer-brand-text b{color:var(--text-dim);font-weight:700;}
   footer .wrap > .footer-bottom{display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;}
   .footer-links{display:flex;flex-wrap:wrap;gap:22px;font-size:13.5px;color:var(--text-dim);}
