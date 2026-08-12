@@ -28,6 +28,6 @@
     "@playwright/test": "^1.40.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   }
 }

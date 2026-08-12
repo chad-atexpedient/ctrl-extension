@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - run: npm ci || npm install
       - run: npm run lint
 
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - run: npm ci || npm install
       - run: npm test
       - name: Verify side-effects-free tests
@@ -35,7 +35,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # Playwright (@playwright/test) requires Node 20+; this job was
+          # still pinned to 18 and failed at "npx playwright install" before
+          # a single test could run, on every push.
+          node-version: '20'
       - run: npm ci || npm install
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
@@ -55,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - run: npm ci || npm install
       - run: npm run package
       - uses: actions/upload-artifact@v4
