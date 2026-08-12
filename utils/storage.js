@@ -627,13 +627,25 @@ class StorageManager {
 
   async getProviderCredentials(providerId) {
     const allCredentials = await this.get(STORAGE_KEYS.PROVIDER_CREDENTIALS) || { ...PROVIDER_CREDENTIALS }
-    return allCredentials[providerId] || { apiKey: '', baseURL: '' }
+    const entry = allCredentials[providerId] || { apiKey: '', baseURL: '' }
+    if (!entry.apiKey) return entry
+    // Stored keys are encrypted (see setProviderCredentials); decrypt() also
+    // transparently handles the plaintext values written by pre-encryption
+    // builds, so this stays backward-compatible with existing installs.
+    try {
+      return { ...entry, apiKey: await this.decrypt(entry.apiKey) }
+    } catch (error) {
+      console.error('Failed to decrypt provider API key:', error)
+      return { ...entry, apiKey: '' }
+    }
   }
 
   async setProviderCredentials(providerId, apiKey, baseURL = '') {
     const allCredentials = await this.get(STORAGE_KEYS.PROVIDER_CREDENTIALS) || { ...PROVIDER_CREDENTIALS }
     allCredentials[providerId] = {
-      apiKey: apiKey || '',
+      // API keys are secrets and must never touch disk in plaintext — encrypt
+      // with the same AES-256-GCM path setAPIKey()/getAPIKey() already use.
+      apiKey: apiKey ? await this.encrypt(apiKey) : '',
       baseURL: baseURL || ''
     }
     await this.set(STORAGE_KEYS.PROVIDER_CREDENTIALS, allCredentials)
@@ -641,7 +653,20 @@ class StorageManager {
 
   async getAllProviderCredentials() {
     const allCredentials = await this.get(STORAGE_KEYS.PROVIDER_CREDENTIALS) || { ...PROVIDER_CREDENTIALS }
-    return allCredentials
+    const decrypted = {}
+    for (const [providerId, entry] of Object.entries(allCredentials)) {
+      if (entry && entry.apiKey) {
+        try {
+          decrypted[providerId] = { ...entry, apiKey: await this.decrypt(entry.apiKey) }
+        } catch (error) {
+          console.error(`Failed to decrypt API key for ${providerId}:`, error)
+          decrypted[providerId] = { ...entry, apiKey: '' }
+        }
+      } else {
+        decrypted[providerId] = entry
+      }
+    }
+    return decrypted
   }
 
   async getAPIKeyForModel(modelId) {

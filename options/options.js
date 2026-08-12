@@ -1,4 +1,4 @@
-import { PROVIDERS, DEFAULT_ENABLED_MODELS, STORAGE_KEYS, RECOMMENDED_MODELS } from '../utils/storage.js';
+import { PROVIDERS, DEFAULT_ENABLED_MODELS, STORAGE_KEYS, RECOMMENDED_MODELS, storage as storageManager } from '../utils/storage.js';
 import { ModelSelectionManager } from '../utils/model-selection-manager.js';
 import { escapeHtml } from '../utils/html-sanitizer.js';
 import { validateModel, validateModels, getModelValidationRules, validateSelectionCount } from '../utils/model-validator.js';
@@ -37,8 +37,32 @@ class OptionsPage {
       }),
       getAllProviderCredentials: async () => {
         try {
-          const credentials = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
-          return credentials || {}
+          // this.storage.get() resolves with the raw chrome.storage.local
+          // result, i.e. { [PROVIDER_CREDENTIALS]: {...} } — every other
+          // caller in this file unwraps that key before using the value.
+          // This one didn't, so it returned the wrapper itself: callers doing
+          // Object.entries(credentials) saw a single fake "provider_credentials"
+          // entry instead of the real per-provider list (the Saved Providers
+          // section always rendered "No saved providers yet"), and
+          // setProviderCredentials() below — which has the same bug — was
+          // nesting the whole wrapper a level deeper on every save, silently
+          // orphaning whichever provider had been saved just before it.
+          const result = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
+          const allCredentials = result?.[STORAGE_KEYS.PROVIDER_CREDENTIALS] || {}
+          const decrypted = {}
+          for (const [providerId, entry] of Object.entries(allCredentials)) {
+            if (entry && entry.apiKey) {
+              try {
+                decrypted[providerId] = { ...entry, apiKey: await storageManager.decrypt(entry.apiKey) }
+              } catch (decryptError) {
+                console.error(`Error decrypting API key for ${providerId}:`, decryptError)
+                decrypted[providerId] = { ...entry, apiKey: '' }
+              }
+            } else {
+              decrypted[providerId] = entry
+            }
+          }
+          return decrypted
         } catch (error) {
           console.error('Error getting provider credentials:', error)
           return {}
@@ -47,11 +71,12 @@ class OptionsPage {
       setProviderCredentials: async (providerId, apiKey, baseURL) => {
         try {
           console.debug('setProviderCredentials called with:', { providerId, apiKey: apiKey ? '***' : '', baseURL })
-          const credentials = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
-          console.debug('setProviderCredentials - existing credentials:', credentials)
-          const existing = credentials || {}
-          existing[providerId] = { apiKey, baseURL }
-          console.debug('setProviderCredentials - new credentials:', existing)
+          const result = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
+          const existing = result?.[STORAGE_KEYS.PROVIDER_CREDENTIALS] || {}
+          // API keys are secrets and must never touch disk in plaintext —
+          // encrypt with the same AES-256-GCM path utils/storage.js uses.
+          existing[providerId] = { apiKey: apiKey ? await storageManager.encrypt(apiKey) : '', baseURL }
+          console.debug('setProviderCredentials - new credentials:', { ...existing, [providerId]: { ...existing[providerId], apiKey: '***' } })
           await this.storage.set({ [STORAGE_KEYS.PROVIDER_CREDENTIALS]: existing })
           console.debug('setProviderCredentials - save complete')
         } catch (error) {
@@ -61,8 +86,8 @@ class OptionsPage {
       },
       deleteProviderCredentials: async (providerId) => {
         try {
-          const credentials = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
-          const existing = credentials || {}
+          const result = await this.storage.get(STORAGE_KEYS.PROVIDER_CREDENTIALS)
+          const existing = result?.[STORAGE_KEYS.PROVIDER_CREDENTIALS] || {}
           delete existing[providerId]
           await this.storage.set({ [STORAGE_KEYS.PROVIDER_CREDENTIALS]: existing })
         } catch (error) {
@@ -1236,7 +1261,14 @@ class OptionsPage {
       const credentials = result[STORAGE_KEYS.PROVIDER_CREDENTIALS] || {}
       console.debug('getProviderCredentials - credentials for all providers:', credentials)
       console.debug('getProviderCredentials - credentials for', providerId, ':', credentials[providerId])
-      return credentials[providerId] || { apiKey: '', baseURL: '' }
+      const entry = credentials[providerId] || { apiKey: '', baseURL: '' }
+      if (!entry.apiKey) return entry
+      try {
+        return { ...entry, apiKey: await storageManager.decrypt(entry.apiKey) }
+      } catch (decryptError) {
+        console.error('Error decrypting API key for', providerId, decryptError)
+        return { ...entry, apiKey: '' }
+      }
     } catch (error) {
       // A storage read failure here used to fall back to an empty-credentials object with
       // only a console.error — every caller then displayed "No API key configured", which is
