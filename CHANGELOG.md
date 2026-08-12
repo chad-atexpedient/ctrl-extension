@@ -3,6 +3,61 @@
 All notable changes to CTRL Extension are documented here. Versioning follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026
+
+### Security
+- **Provider API keys were stored in plaintext** — `setProviderCredentials()` /
+  `getProviderCredentials()` in `utils/storage.js` (the path used by the
+  onboarding wizard and the service worker) and a second, separate copy of
+  the same logic inline in `options/options.js` (the path the Settings page
+  actually calls when you click Save) both wrote `{ apiKey, baseURL }`
+  straight to `chrome.storage.local` with no encryption, despite
+  `setAPIKey()`/`getAPIKey()` elsewhere in the same file already doing this
+  correctly with AES-256-GCM. Both paths now encrypt on write and decrypt on
+  read through that same Web Crypto path. Reading back a key saved by a
+  pre-fix build still works — `decrypt()` already recognized plaintext and
+  returned it as-is — so no migration step is needed; it's re-encrypted the
+  next time it's saved.
+- **Settings page "Save provider" silently corrupted other providers'
+  credentials** — found while fixing the above. The Settings page's local
+  storage helper read `chrome.storage.local.get('provider_credentials')`
+  and used the raw `{ provider_credentials: {...} }` result directly instead
+  of unwrapping it (every other caller in the file does), then merged the
+  new provider's key into that wrapper and wrote it back. Saving credentials
+  for a second provider nested the first provider's entry one level deeper
+  and out of reach of every read path, so it silently reverted to "Not
+  configured" — and the "Saved Providers" list was unaffected only in that
+  it was already permanently broken (`Object.entries()` on the wrapper never
+  produced real entries, so it always rendered "No saved providers yet").
+
+### Fixed
+- **Chat input auto-resize** — the textarea never reset its height before
+  measuring content, so it could grow but never shrink back down, and a few
+  code paths that inserted text programmatically (quick-action prompts, the
+  popup's quick-question handoff) never triggered a resize at all, leaving
+  longer text visually clipped in a too-small box.
+- **Missing "Set up your API key" banner** — the side panel referenced a
+  `setup-banner` element that didn't exist in its HTML (only in the popup),
+  so the banner — and one of the paths back to Settings — silently never
+  rendered. Restored it; the header gear icon has always worked independently.
+- **New-chat dropdown** — the outside-click handler checked a CSS class that
+  didn't exist on the menu, which happened to work by luck of listener
+  ordering rather than by being correct; fixed to check the real selector.
+- **Prompt snippets returned zero results on every fresh install** — the
+  snippet store's `load()` only ever merged built-ins into the list when a
+  matching custom override already existed in storage, so with empty storage
+  (the normal first-run case) all 8 built-in snippets silently vanished.
+- **First-run example conversations were written in the wrong shape** —
+  seeded as an array while every other code path treats `conversations` as
+  an object keyed by name, which broke "already seeded" detection and could
+  have silently dropped a real saved conversation on a later write.
+- **HTML sanitizer fallback** (used outside a DOM context, e.g. tests) fell
+  back to blanket-escaping instead of actually stripping dangerous tags —
+  not an active vulnerability since the real DOM path always uses DOMPurify,
+  but the fallback now does real tag/attribute/protocol stripping so it
+  matches its documented contract and the test suite is green again
+  (280/280 unit tests, was 253/280).
+
 ## [1.1.0] - 2026
 
 ### Added
